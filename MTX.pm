@@ -1,4 +1,4 @@
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 package TapeChanger::MTX;
 # -*- Perl -*- Fri Jan 16 11:07:17 CST 2004 
@@ -7,7 +7,7 @@ package TapeChanger::MTX;
 # Copyright 2001-2004, Tim Skirvin and UIUC Board of Trustees.  
 # Redistribution terms are below.
 ###############################################################################
-my $VERSION = '1.00';
+my $VERSION = '1.01';
 
 =head1 NAME 
 
@@ -154,9 +154,11 @@ sub mt_cmd   { shift->_run("$MT -f $DRIVE @_") }
 sub _run {
   my ($self, $string) = @_;
   warn "$string\n" if debug();
-  my $return = open (CMD, "$string |") or
+  my @return;  
+  my $return = open (CMD, "$string 2>&1 |") or
                         (warn "Couldn't run $string: $!\n" and return undef);
-  my @return = <CMD>; chomp @return;
+  if (debug()) { foreach (<CMD>) { print; chomp; push @return, $_ } } 
+  else         { @return = <CMD>; chomp @return; }
   close(CMD);
   @RETURN = @return || ('');
   wantarray ? @return : join("\n", @return);
@@ -649,3 +651,6 @@ Tim Skirvin <tskirvin@ks.uiuc.edu>.
 # v1.00		Fri Jan 16 11:07:23 CST 2004 
 ### Might as well make this v1.0 some time.  Added a fair bit of contributed 
 ### code to support multi-slot tape drives and volume tags.
+# v1.01		Mon Mar 01 16:57:54 CST 2004 
+### Doesn't echo STDERR in _run() anymore, which makes things look
+### cleaner, unless we're debugging.
